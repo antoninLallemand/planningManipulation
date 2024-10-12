@@ -1,0 +1,11 @@
+{
+    "name": "lorine",
+    "role": 2,
+    "colors": {
+        "work": "rgb(141,237,217)",
+        "undefined": "rgb(253,88,110)",
+        "off": "rgb(238,9,121)",
+        "vacacion": "rgb(192,15,191)",
+        "sick": "rgb(174,225,242)"
+    }
+}
