@@ -1,2 +1,4 @@
 # Ignore all .xlsm files
 *.xlsm
+*.xlsx
+*.xsl
