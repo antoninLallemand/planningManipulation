@@ -5,6 +5,9 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog,
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt
 
+
+## COLOR SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 class ConfigOverlay(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -13,6 +16,7 @@ class ConfigOverlay(QDialog):
 
         #READ JSON
         self.config = settings.settingsHandler.retrieve(self)
+        self.selectedRole = self.config['role']
 
         # Layout for the config overlay
         self.v_layout = QVBoxLayout()
@@ -26,6 +30,7 @@ class ConfigOverlay(QDialog):
         self.name_input.hide()
         self.v_layout.addWidget(self.name_input)
 
+        # ROLE
         self.role_label = QLabel(f"role : {self.roleMeaning(self.config['role'])}", self)
         self.v_layout.addWidget(self.role_label)
 
@@ -34,6 +39,7 @@ class ConfigOverlay(QDialog):
         self.role_input.addItem("pharmacy technician")
         self.role_input.addItem("other")
         self.role_input.hide()
+        self.role_input.setCurrentIndex(self.config['role']-1)
         # Connect the combo box selection change event to a handler
         self.role_input.currentIndexChanged.connect(self.onRoleChange)
         self.v_layout.addWidget(self.role_input)
@@ -63,23 +69,25 @@ class ConfigOverlay(QDialog):
         self.edit_button.hide()
 
     def onRoleChange(self):
-        selected_value = self.role_input.currentText()  # Get the selected text
-        print(selected_value)
+        self.selectedRole = self.role_input.currentText()  # Get the selected text
+        print(self.selectedRole)
 
 
     def onSave(self):
         name = self.name_input.text()
-        if name != "":
-            settings.settingsHandler.save(self, name, self.config['role'], self.config['colors'])
-            self.config = settings.settingsHandler.retrieve(self)
-            self.config_label.setText(f"name : {self.config['name']}")
+        if name == "":
+            name = self.config['name']
 
-            self.name_input.hide()
-            self.save_button.hide()
-            self.role_input.hide()
-            self.edit_button.show()
-        else :
-            QMessageBox.warning(self, "Bad entry", "Please retry.")
+        settings.settingsHandler.save(self, name, self.setRole(self.selectedRole), self.config['colors'])
+        self.config = settings.settingsHandler.retrieve(self)
+        self.name_label.setText(f"name : {self.config['name']}")
+        self.role_label.setText(f"role : {self.roleMeaning(self.config['role'])}")
+
+        self.name_input.hide()
+        self.save_button.hide()
+        self.role_input.hide()
+        self.edit_button.show()
+        # QMessageBox.warning(self, "Bad entry", "Please retry.")
 
     def roleMeaning(self, role): 
         if(role == 1):
