@@ -1,12 +1,12 @@
 import sys
 import importlib
 import settings
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox
-from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox, QColorDialog
+from PyQt6.QtGui import QIcon, QColor
 from PyQt6.QtCore import Qt
 
 
-## COLOR SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+## 3 LEAST COLOR SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 class ConfigOverlay(QDialog):
     def __init__(self, parent=None):
@@ -44,6 +44,32 @@ class ConfigOverlay(QDialog):
         self.role_input.currentIndexChanged.connect(self.onRoleChange)
         self.v_layout.addWidget(self.role_input)
 
+        self.config_colors = self.config['colors']
+        self.selected_colors = self.config['colors']
+
+        # COLORS
+        #OFF
+        # Create a QLabel to display the selected color
+        self.off_color_label = QLabel("Planning off Color", self)
+        self.off_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['off']};")  # Initial color is white
+        self.v_layout.addWidget(self.off_color_label)
+        # Create a QPushButton to open the color picker dialog
+        self.off_color_button = QPushButton("Pick a off Color", self)
+        self.off_color_button.clicked.connect(lambda: self.open_color_dialog(self.off_color_label, 'off'))  # Connect button to color dialog
+        self.v_layout.addWidget(self.off_color_button)
+        self.off_color_button.hide()
+
+        #WORK
+        # Create a QLabel to display the selected color
+        self.work_color_label = QLabel("Planning off Color", self)
+        self.work_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['work']};")  # Initial color is white
+        self.v_layout.addWidget(self.work_color_label)
+        # Create a QPushButton to open the color picker dialog
+        self.work_color_button = QPushButton("Pick a work Color", self)
+        self.work_color_button.clicked.connect(lambda: self.open_color_dialog(self.work_color_label, 'work'))  # Connect button to color dialog
+        self.v_layout.addWidget(self.work_color_button)
+        self.work_color_button.hide()
+
         # Edit button
         self.edit_button = QPushButton("Edit", self)
         self.edit_button.clicked.connect(self.onEdit)
@@ -57,16 +83,30 @@ class ConfigOverlay(QDialog):
 
         # Cancel button
         self.cancel_button = QPushButton("Cancel", self)
-        self.cancel_button.clicked.connect(self.close)  # Close the overlay on cancel
+        self.cancel_button.clicked.connect(self.onCancel)  # Close the overlay on cancel
+        self.cancel_button.hide()
         self.v_layout.addWidget(self.cancel_button)
+        self.selected_colors = self.config['colors']
 
         self.setLayout(self.v_layout)
 
     def onEdit(self):
         self.name_input.show()
         self.role_input.show()
+        self.off_color_button.show()
+        self.work_color_button.show()
         self.save_button.show()
+        self.cancel_button.show()
         self.edit_button.hide()
+
+    def onCancel(self):
+        self.name_input.hide()
+        self.save_button.hide()
+        self.off_color_button.hide()
+        self.work_color_button.hide()
+        self.role_input.hide()
+        self.edit_button.show()
+        self.cancel_button.hide()
 
     def onRoleChange(self):
         self.selectedRole = self.role_input.currentText()  # Get the selected text
@@ -78,15 +118,18 @@ class ConfigOverlay(QDialog):
         if name == "":
             name = self.config['name']
 
-        settings.settingsHandler.save(self, name, self.setRole(self.selectedRole), self.config['colors'])
+        settings.settingsHandler.save(self, name, self.setRole(self.selectedRole), self.selected_colors)
         self.config = settings.settingsHandler.retrieve(self)
         self.name_label.setText(f"name : {self.config['name']}")
         self.role_label.setText(f"role : {self.roleMeaning(self.config['role'])}")
 
         self.name_input.hide()
         self.save_button.hide()
+        self.off_color_button.hide()
+        self.work_color_button.hide()
         self.role_input.hide()
         self.edit_button.show()
+        self.cancel_button.hide()
         # QMessageBox.warning(self, "Bad entry", "Please retry.")
 
     def roleMeaning(self, role): 
@@ -109,6 +152,14 @@ class ConfigOverlay(QDialog):
         else:
             return 4
 
+    def open_color_dialog(self, color_label: QLabel, color_type):
+        """Open the color picker dialog and set the selected color."""
+        color = QColorDialog.getColor(QColor(self.selected_colors[color_type]), self)
+
+        if color.isValid():  # Check if a valid color is selected
+            self.selected_colors[color_type] = color.name()
+            color_label.setStyleSheet(f"color: black; background-color: {color.name()};")
+            print(color.name())
 
 class MainWindow(QMainWindow):
     def __init__(self):
