@@ -8,6 +8,7 @@ from tkinter import filedialog
 import openpyxl
 import locale
 import string
+import re
 
 root = tk.Tk()
 root.withdraw()
@@ -38,7 +39,7 @@ sheet_head = []
 
 for sheet_name in sheet_names:
     df = pd.read_excel(xls, sheet_name=sheet_name, header=None)
-    if df.iloc[0, 0] != sheet_name:
+    if re.sub(r"\s+", "", df.iloc[0, 0]) != re.sub(r"\s+", "", sheet_name):
         df = df.iloc[1:]
         sheet_head.append(True)
     else :
@@ -66,7 +67,7 @@ for sheet_number in range(0,len(sheets_content)) :
     #search rows with days of the week dates
     row_with_week = []
     for index, value in enumerate(sheet_dict_lists[0]):
-        if value == sheet_names[sheet_number]:
+        if re.sub(r"\s+", "", str(value)) == re.sub(r"\s+", "", sheet_names[sheet_number]):
             row_with_week.append(index)
 
     # print(row_with_week)
@@ -126,9 +127,10 @@ for sheet_number in range(0,len(sheets_content)) :
                 frames.append([row[0], row[1]])
 
         return frames
-    print(sheet_names[sheet_number])
-    for day in planning :
-        print(workFrame(day))
+    # print(sheet_names[sheet_number])
+    print("------------------------")
+    # for day in planning :
+    #     print(workFrame(day))
     
     data = []
     date = 0

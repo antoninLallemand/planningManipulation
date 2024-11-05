@@ -4,15 +4,16 @@ import settings
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox, QColorDialog
 from PyQt6.QtGui import QIcon, QColor
 from PyQt6.QtCore import Qt
+import copy
 
 
-## 3 LEAST COLOR SETTINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+## PLOTLY : FONT SIZE + CALCULATION WINDOW
 
 class ConfigOverlay(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Configuration")
-        self.setFixedSize(300, 200)
+        self.setFixedSize(300, 500)
 
         #READ JSON
         self.config = settings.settingsHandler.retrieve(self)
@@ -44,8 +45,8 @@ class ConfigOverlay(QDialog):
         self.role_input.currentIndexChanged.connect(self.onRoleChange)
         self.v_layout.addWidget(self.role_input)
 
-        self.config_colors = self.config['colors']
-        self.selected_colors = self.config['colors']
+        self.config_colors = copy.deepcopy(self.config['colors'])
+        self.selected_colors = copy.deepcopy(self.config['colors'])
 
         # COLORS
         #OFF
@@ -61,7 +62,7 @@ class ConfigOverlay(QDialog):
 
         #WORK
         # Create a QLabel to display the selected color
-        self.work_color_label = QLabel("Planning off Color", self)
+        self.work_color_label = QLabel("Planning work Color", self)
         self.work_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['work']};")  # Initial color is white
         self.v_layout.addWidget(self.work_color_label)
         # Create a QPushButton to open the color picker dialog
@@ -69,6 +70,39 @@ class ConfigOverlay(QDialog):
         self.work_color_button.clicked.connect(lambda: self.open_color_dialog(self.work_color_label, 'work'))  # Connect button to color dialog
         self.v_layout.addWidget(self.work_color_button)
         self.work_color_button.hide()
+
+        #SICK
+        # Create a QLabel to display the selected color
+        self.sick_color_label = QLabel("Planning sick Color", self)
+        self.sick_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['sick']};")  # Initial color is white
+        self.v_layout.addWidget(self.sick_color_label)
+        # Create a QPushButton to open the color picker dialog
+        self.sick_color_button = QPushButton("Pick a sick Color", self)
+        self.sick_color_button.clicked.connect(lambda: self.open_color_dialog(self.sick_color_label, 'sick'))  # Connect button to color dialog
+        self.v_layout.addWidget(self.sick_color_button)
+        self.sick_color_button.hide()
+
+        #VACATION
+        # Create a QLabel to display the selected color
+        self.vacation_color_label = QLabel("Planning vacation Color", self)
+        self.vacation_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['vacation']};")  # Initial color is white
+        self.v_layout.addWidget(self.vacation_color_label)
+        # Create a QPushButton to open the color picker dialog
+        self.vacation_color_button = QPushButton("Pick a vacation Color", self)
+        self.vacation_color_button.clicked.connect(lambda: self.open_color_dialog(self.vacation_color_label, 'vacation'))  # Connect button to color dialog
+        self.v_layout.addWidget(self.vacation_color_button)
+        self.vacation_color_button.hide()
+
+        #VACATION
+        # Create a QLabel to display the selected color
+        self.undefined_color_label = QLabel("Planning undefined Color", self)
+        self.undefined_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['undefined']};")  # Initial color is white
+        self.v_layout.addWidget(self.undefined_color_label)
+        # Create a QPushButton to open the color picker dialog
+        self.undefined_color_button = QPushButton("Pick a undefined Color", self)
+        self.undefined_color_button.clicked.connect(lambda: self.open_color_dialog(self.undefined_color_label, 'undefined'))  # Connect button to color dialog
+        self.v_layout.addWidget(self.undefined_color_button)
+        self.undefined_color_button.hide()
 
         # Edit button
         self.edit_button = QPushButton("Edit", self)
@@ -95,6 +129,9 @@ class ConfigOverlay(QDialog):
         self.role_input.show()
         self.off_color_button.show()
         self.work_color_button.show()
+        self.sick_color_button.show()
+        self.vacation_color_button.show()
+        self.undefined_color_button.show()
         self.save_button.show()
         self.cancel_button.show()
         self.edit_button.hide()
@@ -103,7 +140,15 @@ class ConfigOverlay(QDialog):
         self.name_input.hide()
         self.save_button.hide()
         self.off_color_button.hide()
+        self.off_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['off']};")
         self.work_color_button.hide()
+        self.work_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['work']};")
+        self.sick_color_button.hide()
+        self.sick_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['sick']};")
+        self.vacation_color_button.hide()
+        self.vacation_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['vacation']};")
+        self.undefined_color_button.hide()
+        self.undefined_color_label.setStyleSheet(f"color: black; background-color: {self.config_colors['undefined']};")
         self.role_input.hide()
         self.edit_button.show()
         self.cancel_button.hide()
@@ -127,6 +172,9 @@ class ConfigOverlay(QDialog):
         self.save_button.hide()
         self.off_color_button.hide()
         self.work_color_button.hide()
+        self.sick_color_button.hide()
+        self.vacation_color_button.hide()
+        self.undefined_color_button.hide()
         self.role_input.hide()
         self.edit_button.show()
         self.cancel_button.hide()
@@ -159,7 +207,8 @@ class ConfigOverlay(QDialog):
         if color.isValid():  # Check if a valid color is selected
             self.selected_colors[color_type] = color.name()
             color_label.setStyleSheet(f"color: black; background-color: {color.name()};")
-            print(color.name())
+
+'''-------------------------- MAIN WINDOW ----------------------------'''
 
 class MainWindow(QMainWindow):
     def __init__(self):

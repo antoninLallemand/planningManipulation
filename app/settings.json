@@ -1,9 +1,9 @@
 {
     "colors": {
         "off": "#ee0979",
-        "sick": "rgb(174,225,242)",
-        "undefined": "rgb(253,88,110)",
-        "vacacion": "rgb(192,15,191)",
+        "sick": "#aee1f2",
+        "undefined": "#fd586e",
+        "vacation": "#c00fbf",
         "work": "#8dedd9"
     },
     "name": "lorine",
