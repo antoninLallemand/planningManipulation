@@ -1,6 +1,7 @@
 import sys
 import importlib
 import settings
+import planning_generation
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox, QColorDialog
 from PyQt6.QtGui import QIcon, QColor
 from PyQt6.QtCore import Qt
@@ -229,7 +230,7 @@ class MainWindow(QMainWindow):
         self.app_title_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         layout.addWidget(self.app_title_label)
 
-        # Create a button
+        # Planning file selsction
         self.explorer_button = QPushButton("Select a planning Excel file", self)
         # Connect button click to the file open method
         self.explorer_button.clicked.connect(self.open_file_dialog)
@@ -239,6 +240,10 @@ class MainWindow(QMainWindow):
         # Create a label for the file name output
         self.selected_file_label = QLabel("", self)
         layout.addWidget(self.selected_file_label)
+
+        self.calculation_button = QPushButton("Generate planning", self)
+        self.calculation_button.clicked.connect(self.calculate_planning)
+        layout.addWidget(self.calculation_button)
 
         self.central_widget.setLayout(layout)
 
@@ -264,9 +269,6 @@ class MainWindow(QMainWindow):
         # Set layout to the central widget
         self.central_widget.setLayout(layout)
 
-        # Instance variable to store the selected file name
-        self.selected_file = ""
-
         # Create the config overlay dialog (but keep it hidden initially)
         self.config_overlay = ConfigOverlay(self)
 
@@ -289,11 +291,18 @@ class MainWindow(QMainWindow):
         self.config_overlay.move(self.geometry().center() - self.config_overlay.rect().center())
         self.config_overlay.exec()
 
+    def calculate_planning(self):
+        if self.selected_file == "":
+            QMessageBox.warning(self, "No File Selected", "Please select a file nefore running generation.")
+        else:
+            self.config = settings.settingsHandler.retrieve(self)
+            planning_generation.generate_planning(self.selected_file, self.config)
 
 
 # Run the application
 if __name__ == "__main__":
     importlib.reload(settings)
+    importlib.reload(planning_generation)
     app = QApplication(sys.argv)
     window = MainWindow()
 
