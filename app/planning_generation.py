@@ -1,13 +1,11 @@
 import pandas as pd
-import json
 import numpy as np
 import datetime
 import math
-import openpyxl
-import string
+import plotly.express as px
 import tkinter as tk
 from tkinter import filedialog
-from tkinter import colorchooser
+import openpyxl
 import locale
 import string
 import re
@@ -119,7 +117,7 @@ def build_planning_frame(planning, color_sheet, sheet_head, week_dates, rows_wit
             start = start_time + datetime.timedelta(hours=8)
             finish = start_time + datetime.timedelta(hours=20)
             activity_name = f"{days_of_week[index]} {week_dates[index]}"
-            tache = "off"
+            tache = "inconnu"
             for i in range (0, day.size-4):
                 cell = color_sheet[f"{alphabet_enum[i+1]}{rows_with_name[index]+sheet_offset}"]
                 if isinstance(cell.fill.start_color.rgb, str):
@@ -161,54 +159,94 @@ def generate_planning(file_path, config):
         sheet_names, sheet_content, sheet_head = retrieve_sheets(file_path)
         workbook = openpyxl.load_workbook(file_path)
 
-        if 'name' in config:
+        figures = []
 
+        if 'name' in config and 'colors' in config:
             user_name = str(config['name']).upper()
 
+            config_colors = config['colors']
+            color_map = {
+                "travail": config_colors['work'],
+                "inconnu": config_colors['undefined'],
+                "repos": config_colors['off'],
+                "vacances": config_colors['vacation'],
+                "arrêt": config_colors['sick']
+            }
+
             for sheet_number, sheet in enumerate(sheet_content):
-                sheet_dict_list = sheet.to_dict(orient='list')
+                try:
+                    sheet_dict_list = sheet.to_dict(orient='list')
 
-                row_with_week = retrieve_week_rows(sheet_dict_list, sheet_names[sheet_number])
-                row_with_name = retrieve_name_rows(sheet_dict_list, user_name)
+                    row_with_week = retrieve_week_rows(sheet_dict_list, sheet_names[sheet_number])
+                    row_with_name = retrieve_name_rows(sheet_dict_list, user_name)
 
-                if len(row_with_week) != 6 or len(row_with_name) != 6:
-                    if len(row_with_name) == 0:
-                        raise Exception("The name you provided does not exist in the file")
-                    elif len(row_with_week < 6):
-                        raise Exception(f"The file contains a week number error at {sheet_names[sheet_number]}")
-                    else:
-                        raise Exception("Error about user name or week number in the file")
+                    if len(row_with_week) != 6 or len(row_with_name) != 6:
+                        if len(row_with_name) == 0:
+                            raise Exception("The name you provided does not exist in the file")
+                        elif len(row_with_week < 6):
+                            raise Exception(f"The file contains a week number error at {sheet_names[sheet_number]}")
+                        else:
+                            raise Exception("Error about user name or week number in the file")
 
-                week_dates = get_week_dates(sheet_dict_list, row_with_week)
+                    week_dates = get_week_dates(sheet_dict_list, row_with_week)
 
-                half_hour_planning = get_half_hour(sheet_dict_list, row_with_name)
+                    half_hour_planning = get_half_hour(sheet_dict_list, row_with_name)
 
-                color_sheet =  workbook[sheet_names[sheet_number]]
-                # duty day
-                half_hour_planning = get_color_hours(half_hour_planning, color_sheet, sheet_head[sheet_number], row_with_name)
+                    color_sheet =  workbook[sheet_names[sheet_number]]
+                    # duty day
+                    half_hour_planning = get_color_hours(half_hour_planning, color_sheet, sheet_head[sheet_number], row_with_name)
 
-                data = build_planning_frame(half_hour_planning, color_sheet, sheet_head[sheet_number], week_dates, row_with_week)
+                    data = build_planning_frame(half_hour_planning, color_sheet, sheet_head[sheet_number], week_dates, row_with_week)
 
-                # Data with hour-based tasks (use a dummy date like '2024-01-01')
-                df = pd.DataFrame(data)
-                # Convert Start and Finish to datetime format
-                df['Start'] = pd.to_datetime(df['Start'])
-                df['Finish'] = pd.to_datetime(df['Finish'])
+                    # Data with hour-based tasks (use a dummy date like '2024-01-01')
+                    df = pd.DataFrame(data)
+                    # Convert Start and Finish to datetime format
+                    df['Start'] = pd.to_datetime(df['Start'])
+                    df['Finish'] = pd.to_datetime(df['Finish'])
 
-                # Calculate the duration of each task and total time elapsed
-                df['Duration'] = df['Finish'] - df['Start']
-               
-                total_hours_task_work = define_week_work_duration(df)
+                    # Calculate the duration of each task and total time elapsed
+                    df['Duration'] = df['Finish'] - df['Start']
+                
+                    total_hours_task_work = define_week_work_duration(df)
 
-                # Define the exact order of tasks as they appear in the data
-                task_order = df["Work"].tolist()
+                    # Define the exact order of tasks as they appear in the data
+                    task_order = df["Work"].tolist()
 
-                print(total_hours_task_work)
-                print("------------------------")
+                    fig = px.timeline(
+                        df,
+                        x_start="Start",
+                        x_end="Finish",
+                        y="Work",
+                        color="Tâche",
+                        category_orders={"Work": task_order},
+                        color_discrete_map=color_map
+                    )
 
+                    # Adjust x-axis to show tick marks at 30-minute intervals
+                    fig.update_layout(
+                        xaxis=dict(
+                            tickformat="%H:%M",  # Format to show only hours and minutes
+                            title="Temps",
+                            side="top",  # Move the x-axis to the top
+                            dtick=1800000  # 30 minutes in milliseconds (30 * 60 * 1000)
+                        ),
+                        title=f"Total heures : {total_hours_task_work} h"
+                    )
+
+                    figures.append(fig)
+
+                    print(fig)
+                    print("------------------------")
+
+                except Exception as e:
+                    figures.append(px.timeline())
+                    print(e)
+                    pass
 
         else:
-            print("NO NAME IN CONFIG !!!")
+            print("NO NAME OR NO COLORS IN CONFIG !!!")
+
+        return figures
     except Exception as e:
         print(e)
 

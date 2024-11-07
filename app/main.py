@@ -2,13 +2,14 @@ import sys
 import importlib
 import settings
 import planning_generation
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox, QColorDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox, QColorDialog, QStackedWidget
 from PyQt6.QtGui import QIcon, QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 import copy
 
 
-## PLOTLY : FONT SIZE + CALCULATION WINDOW
+## LOADING DEBUG (Qt.??) + SAVE NAME + DEBUG COLORS
 
 class ConfigOverlay(QDialog):
     def __init__(self, parent=None):
@@ -209,6 +210,108 @@ class ConfigOverlay(QDialog):
             self.selected_colors[color_type] = color.name()
             color_label.setStyleSheet(f"color: black; background-color: {color.name()};")
 
+
+'''------------------------- PLANNING WINDOW -------------------------'''
+class PlanningOverlay(QDialog):
+    def __init__(self, figures, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.figures = figures
+        self.setWindowTitle("Plannings")
+
+        # Carousel widget to hold figures
+        self.carousel = QStackedWidget()
+
+        # Convert each Plotly figure to HTML and add it to QStackedWidget
+        for fig in figures:
+            html = fig.to_html(include_plotlyjs="cdn")
+            web_view = QWebEngineView()
+            web_view.setHtml(html)
+            self.carousel.addWidget(web_view)
+
+         # Navigation buttons
+        self.prev_button = QPushButton("Précédent")
+        self.next_button = QPushButton("Suivant")
+        self.prev_button.clicked.connect(self.show_previous_image)
+        self.next_button.clicked.connect(self.show_next_image)
+
+        # Set up the layout
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.prev_button)
+        button_layout.addWidget(self.next_button)
+        
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.carousel)
+        main_layout.addLayout(button_layout)
+
+        self.setLayout(main_layout)
+
+        # Initial button state check
+        self.update_button_states()
+
+    def update_button_states(self):
+        """Enable/disable buttons based on the current index in the carousel."""
+        current_index = self.carousel.currentIndex()
+        total_images = self.carousel.count()
+        
+        # Disable "Previous" if at the first image
+        self.prev_button.setEnabled(current_index > 0)
+
+        # Disable "Next" if at the last image
+        self.next_button.setEnabled(current_index < total_images - 1)
+
+    def show_previous_image(self):
+        # Show the previous image in the carousel
+        current_index = self.carousel.currentIndex()
+        if current_index > 0:
+            self.carousel.setCurrentIndex(current_index - 1)
+            self.update_button_states()
+
+    def show_next_image(self):
+        # Show the next image in the carousel
+        current_index = self.carousel.currentIndex()
+        if current_index < self.carousel.count() - 1:
+            self.carousel.setCurrentIndex(current_index + 1)
+            self.update_button_states()
+
+
+"""---------------- LOADING OVERLAY ------------------"""
+class LoadingOverlay(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setModal(True)
+        self.setWindowTitle("Loading")
+        self.setFixedSize(200, 200)
+        # self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
+
+        # Centered loading message
+        self.label = QLabel("Loading, please wait...", self)
+        self.label.setStyleSheet("font-size: 18px; color: white;")
+        # self.label.setAlignment(Qt.AlignCenter)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.label)
+        self.setLayout(layout)
+
+    def resizeEvent(self, event):
+        self.setGeometry(self.parent().geometry())  # Match parent window size
+
+
+"""--------- MANAGING GENERATION FUNCTION THREAD ----------"""
+
+class GeneratePlanningThread(QThread):
+    finished = pyqtSignal(list)
+
+    def __init__(self, selected_file, config):
+        super().__init__()
+        self.selected_file = selected_file
+        self.config = config
+
+    def run(self):
+        # Perform the long-running function
+        figures = planning_generation.generate_planning(self.selected_file, self.config)
+        self.finished.emit(figures)  # Emit the results when done
+
 '''-------------------------- MAIN WINDOW ----------------------------'''
 
 class MainWindow(QMainWindow):
@@ -241,13 +344,12 @@ class MainWindow(QMainWindow):
         self.selected_file_label = QLabel("", self)
         layout.addWidget(self.selected_file_label)
 
+        # CALCULATION
         self.calculation_button = QPushButton("Generate planning", self)
         self.calculation_button.clicked.connect(self.calculate_planning)
         layout.addWidget(self.calculation_button)
 
         self.central_widget.setLayout(layout)
-
-
 
 
         # Horizontal layout for top-right config button
@@ -296,8 +398,22 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "No File Selected", "Please select a file nefore running generation.")
         else:
             self.config = settings.settingsHandler.retrieve(self)
-            planning_generation.generate_planning(self.selected_file, self.config)
+             # Show loading overlay
+            self.loading_overlay = LoadingOverlay(self)
+            self.loading_overlay.show()
 
+            # Run generate_planning in a separate thread
+            self.thread = GeneratePlanningThread(self.selected_file, self.config)
+            self.thread.finished.connect(self.on_planning_generated)
+            self.thread.start()
+
+    def on_planning_generated(self, figures):
+        # Close the loading overlay when done
+        self.loading_overlay.close()
+
+        # Show planning result overlay with generated figures
+        self.planning_overlay = PlanningOverlay(figures)
+        self.planning_overlay.showMaximized()
 
 # Run the application
 if __name__ == "__main__":

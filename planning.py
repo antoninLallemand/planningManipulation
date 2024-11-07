@@ -151,7 +151,7 @@ for sheet_number in range(0,len(sheets_content)) :
             start = start_time + datetime.timedelta(hours=8)
             finish = start_time + datetime.timedelta(hours=20)
             activity_name = f"{days_of_week[date]} {week_dates[date]}"
-            tache = "off"
+            tache = "inconnu"
             for i in range (0, day.size-4):
                 cell = sheet[f"{alphabet_enum[i+1]}{rows_with_name[date]+sheet_offset}"]
                 if isinstance(cell.fill.start_color.rgb, str):
@@ -198,7 +198,7 @@ for sheet_number in range(0,len(sheets_content)) :
 
     color_map = {
         "travail": "rgb(141,237,217)",
-        "off": "rgb(253,88,110)",
+        "inconnu": "rgb(253,88,110)",
         "repos": "rgb(238,9,121)",
         "vacances": "rgb(192,15,191)",
         "arrêt": "rgb(174,225,242)"
