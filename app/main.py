@@ -3,13 +3,13 @@ import importlib
 import settings
 import planning_generation
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox, QColorDialog, QStackedWidget
-from PyQt6.QtGui import QIcon, QColor
+from PyQt6.QtGui import QIcon, QColor, QMovie, QPalette
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 import copy
 
 
-## LOADING DEBUG (Qt.??) + SAVE NAME + DEBUG COLORS
+## SAVE PNG NAME + DEBUG COLORS + ROLE SETTINGS
 
 class ConfigOverlay(QDialog):
     def __init__(self, parent=None):
@@ -278,23 +278,30 @@ class PlanningOverlay(QDialog):
 class LoadingOverlay(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setModal(True)
-        self.setWindowTitle("Loading")
-        self.setFixedSize(200, 200)
-        # self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        # self.setAttribute(Qt.WA_TranslucentBackground)
 
-        # Centered loading message
-        self.label = QLabel("Loading, please wait...", self)
-        self.label.setStyleSheet("font-size: 18px; color: white;")
-        # self.label.setAlignment(Qt.AlignCenter)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.label)
-        self.setLayout(layout)
+         # Set overlay to cover the entire parent window
+        self.resize(parent.size())
+        self.move(parent.pos())
 
-    def resizeEvent(self, event):
-        self.setGeometry(self.parent().geometry())  # Match parent window size
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Label to hold the animated GIF
+        self.spinner_label = QLabel(self)
+        layout.addWidget(self.spinner_label)
+
+        # Load an animated GIF as a spinner
+        self.spinner_movie = QMovie("./loader.gif")
+        self.spinner_label.setMovie(self.spinner_movie)
+        self.spinner_movie.start()
+
+        # self.setLayout(layout)
+
 
 
 """--------- MANAGING GENERATION FUNCTION THREAD ----------"""
@@ -359,11 +366,22 @@ class MainWindow(QMainWindow):
         top_layout.addStretch()
 
         # Create a tool button for the config (gear icon)
-        self.config_button = QToolButton(self)
-        self.config_button.setIcon(QIcon("gear_icon.png"))  # Use a gear icon here
-        self.config_button.setStyleSheet("width: 50; height: auto;")
+        self.config_button = QPushButton(self)
+        self.config_button.setFixedSize(50, 50)
         self.config_button.clicked.connect(self.show_config_overlay)
         top_layout.addWidget(self.config_button)
+
+        # Create QMovie and QLabel for GIF
+        self.config_gif = QMovie("./gear.gif")  # Replace with your GIF file path
+        self.config_gif.setScaledSize(self.config_button.size())  # Scale GIF to button size
+
+        # Set the QMovie as an icon on the button
+        self.label = QLabel(self.config_button)  # QLabel to hold GIF inside the button
+        self.label.setMovie(self.config_gif)
+        self.label.setGeometry(0, 0, self.config_button.width(), self.config_button.height())  # Center GIF in button
+
+        # Start the animation
+        self.config_gif.start()
 
         # Add top layout above the main layout
         layout.insertLayout(0, top_layout)
