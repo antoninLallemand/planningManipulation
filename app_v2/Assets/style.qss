@@ -1,0 +1,11 @@
+/*-----QWidget-----*/
+QWidget
+{
+	background-color: #606060;
+	color: #ffffff;
+	border-color: #051a39;
+	font-weight: bold;
+	font-family : Trebuchet MS;
+	font-size : 20px;
+
+}

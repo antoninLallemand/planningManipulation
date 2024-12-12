@@ -9,7 +9,7 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 import copy
 
 
-## SAVE PNG NAME + DEBUG COLORS + ROLE SETTINGS
+## SAVE PNG NAME + ROLE SETTINGS + QSS + .EXE
 
 class ConfigOverlay(QDialog):
     def __init__(self, parent=None):
