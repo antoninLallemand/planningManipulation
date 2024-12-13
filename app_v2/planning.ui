@@ -79,7 +79,7 @@
           </size>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="homeTab">
           <attribute name="title">
@@ -452,7 +452,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit"/>
+               <widget class="QLineEdit" name="SettingsNameLineEdit"/>
               </item>
               <item>
                <spacer name="horizontalSpacer_2">
@@ -492,7 +492,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="comboBox"/>
+               <widget class="QComboBox" name="SettingsRoleComboBox"/>
               </item>
               <item>
                <spacer name="horizontalSpacer_4">

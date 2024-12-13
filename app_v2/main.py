@@ -3,10 +3,11 @@ from PyQt5.uic import loadUi
 import sys, os
 import settings
 import importlib
+import copy
 
 """
 TODO :
-    - SETTINGS
+    - SETTINGS : COLOR DIALOG BUG
     - QSS
     - ERROR MANAGEMENT
 """
@@ -51,7 +52,7 @@ class MainUI(QtWidgets.QMainWindow):
         self.browseXlsButton.clicked.connect(self.browse_xls)
         self.generatePlanningButton.clicked.connect(self.generate_planning)
 
-
+        """RESULT PAGE"""
         self.resultCarousel = self.findChild(QtWidgets.QStackedWidget, 'resultCarousel')
         self.carouselPreviousButton = self.findChild(QtWidgets.QPushButton, 'carouselPreviousButton')
         self.carouselNextButton = self.findChild(QtWidgets.QPushButton, 'carouselNextButton')
@@ -59,6 +60,47 @@ class MainUI(QtWidgets.QMainWindow):
         self.carouselPreviousButton.clicked.connect(self.show_previous_image)
         self.carouselNextButton.clicked.connect(self.show_next_image)
 
+        """SETTINGS PAGE"""
+        self.SettingsNameLineEdit = self.findChild(QtWidgets.QLineEdit, 'SettingsNameLineEdit')
+        self.SettingsNameLineEdit.setText(self.config['name'])
+
+        self.SettingsRoleComboBox = self.findChild(QtWidgets.QComboBox, 'SettingsRoleComboBox')
+        self.SettingsRoleComboBox.addItem("pharmacien")
+        self.SettingsRoleComboBox.addItem("préparateur en pharmacie")
+        self.SettingsRoleComboBox.addItem("autre")
+        self.SettingsRoleComboBox.setCurrentIndex(self.config['role'])
+
+        self.config_colors = copy.deepcopy(self.config['colors'])
+        self.selected_colors = copy.deepcopy(self.config['colors'])
+
+        self.OffColorPushButton = self.findChild(QtWidgets.QPushButton, 'OffColorPushButton')
+        self.OffColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['off']};")
+        self.OffColorPushButton.clicked.connect(self.open_color_dialog(self.OffColorPushButton, 'off'))
+
+        self.WorkColorPushButton = self.findChild(QtWidgets.QPushButton, 'WorkColorPushButton')
+        self.WorkColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['work']};")
+        self.WorkColorPushButton.clicked.connect(self.open_color_dialog(self.WorkColorPushButton, 'work'))
+
+        self.SickColorPushButton = self.findChild(QtWidgets.QPushButton, 'SickColorPushButton')
+        self.SickColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['sick']};")
+        self.SickColorPushButton.clicked.connect(self.open_color_dialog(self.SickColorPushButton, 'sick'))
+
+        self.VacColorPushButton = self.findChild(QtWidgets.QPushButton, 'VacColorPushButton')
+        self.VacColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['vacation']};")
+        self.VacColorPushButton.clicked.connect(self.open_color_dialog(self.VacColorPushButton, 'vacation'))
+
+        self.UndefColorPushButton = self.findChild(QtWidgets.QPushButton, 'UndefColorPushButton')
+        self.UndefColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['undefined']};")
+        self.UndefColorPushButton.clicked.connect(self.open_color_dialog(self.UndefColorPushButton, 'undefined'))
+
+
+    def open_color_dialog(self, color_button: QtWidgets.QPushButton, color_type):
+        """Open the color picker dialog and set the selected color."""
+        color = QtWidgets.QColorDialog.getColor(QtGui.QColor(self.selected_colors[color_type]), self)
+
+        if color.isValid():  # Check if a valid color is selected
+            self.selected_colors[color_type] = color.name()
+            color_button.setStyleSheet(f"color: black; background-color: {color.name()};")
 
     def browse_xls(self):
         file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Excel File", "", "Excel Files (*.xls *.xlsm *.xlsx)")
@@ -133,6 +175,9 @@ class MainUI(QtWidgets.QMainWindow):
             self.resultCarousel.removeWidget(widget_to_remove)
             widget_to_remove.deleteLater()  # Safely delete the widget
         print("All pages removed successfully")
+
+
+
 
 
 
