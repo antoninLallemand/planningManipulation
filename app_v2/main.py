@@ -7,13 +7,13 @@ import copy
 
 """
 TODO :
-    - SETTINGS : COLOR DIALOG BUG
     - QSS
     - ERROR MANAGEMENT
+    - PLANNING SAVE WITH NAME
 """
 
 class PlanningThread(QtCore.QThread):
-    # Signal to notify when the planning generation is complete
+    # Signal to notify when the planning generation is complete 
     finished = QtCore.pyqtSignal(list)
 
     def __init__(self, file, config):
@@ -75,32 +75,28 @@ class MainUI(QtWidgets.QMainWindow):
 
         self.OffColorPushButton = self.findChild(QtWidgets.QPushButton, 'OffColorPushButton')
         self.OffColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['off']};")
-        self.OffColorPushButton.clicked.connect(self.open_color_dialog(self.OffColorPushButton, 'off'))
+        self.OffColorPushButton.clicked.connect(lambda: self.open_color_dialog(self.OffColorPushButton, 'off'))
 
         self.WorkColorPushButton = self.findChild(QtWidgets.QPushButton, 'WorkColorPushButton')
         self.WorkColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['work']};")
-        self.WorkColorPushButton.clicked.connect(self.open_color_dialog(self.WorkColorPushButton, 'work'))
+        self.WorkColorPushButton.clicked.connect(lambda: self.open_color_dialog(self.WorkColorPushButton, 'work'))
 
         self.SickColorPushButton = self.findChild(QtWidgets.QPushButton, 'SickColorPushButton')
         self.SickColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['sick']};")
-        self.SickColorPushButton.clicked.connect(self.open_color_dialog(self.SickColorPushButton, 'sick'))
+        self.SickColorPushButton.clicked.connect(lambda: self.open_color_dialog(self.SickColorPushButton, 'sick'))
 
         self.VacColorPushButton = self.findChild(QtWidgets.QPushButton, 'VacColorPushButton')
         self.VacColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['vacation']};")
-        self.VacColorPushButton.clicked.connect(self.open_color_dialog(self.VacColorPushButton, 'vacation'))
+        self.VacColorPushButton.clicked.connect(lambda: self.open_color_dialog(self.VacColorPushButton, 'vacation'))
 
         self.UndefColorPushButton = self.findChild(QtWidgets.QPushButton, 'UndefColorPushButton')
         self.UndefColorPushButton.setStyleSheet(f"color: black; background-color: {self.selected_colors['undefined']};")
-        self.UndefColorPushButton.clicked.connect(self.open_color_dialog(self.UndefColorPushButton, 'undefined'))
+        self.UndefColorPushButton.clicked.connect(lambda: self.open_color_dialog(self.UndefColorPushButton, 'undefined'))
+
+        self.ValidateSettingsButton = self.findChild(QtWidgets.QPushButton, 'ValidateSettingsButton')
+        self.ValidateSettingsButton.clicked.connect(self.save_modified_settings)
 
 
-    def open_color_dialog(self, color_button: QtWidgets.QPushButton, color_type):
-        """Open the color picker dialog and set the selected color."""
-        color = QtWidgets.QColorDialog.getColor(QtGui.QColor(self.selected_colors[color_type]), self)
-
-        if color.isValid():  # Check if a valid color is selected
-            self.selected_colors[color_type] = color.name()
-            color_button.setStyleSheet(f"color: black; background-color: {color.name()};")
 
     def browse_xls(self):
         file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Excel File", "", "Excel Files (*.xls *.xlsm *.xlsx)")
@@ -115,7 +111,7 @@ class MainUI(QtWidgets.QMainWindow):
         # Implement your logic for generating the planning
         print("Generate planning clicked")
         if self.selected_file == "":
-            QtWidgets.QMessageBox.warning(self, "No File Selected", "Please select a file nefore running generation.")
+            QtWidgets.QMessageBox.warning(self, "No File Selected", "Please select a file before running generation.")
         else:
             self.generatePlanningButton.setText("")
             self.generatePlanningButton.setEnabled(False)
@@ -177,7 +173,22 @@ class MainUI(QtWidgets.QMainWindow):
         print("All pages removed successfully")
 
 
+    def open_color_dialog(self, color_button: QtWidgets.QPushButton, color_type):
+        """Open the color picker dialog and set the selected color."""
+        color = QtWidgets.QColorDialog.getColor(QtGui.QColor(self.selected_colors[color_type]), self)
 
+        if color.isValid():  # Check if a valid color is selected
+            self.selected_colors[color_type] = color.name()
+            color_button.setStyleSheet(f"color: black; background-color: {color.name()};")
+
+    def save_modified_settings(self):
+        name = self.SettingsNameLineEdit.text()
+        if name == "":
+            name = self.config['name']
+            QtWidgets.QMessageBox.warning(self, "Invalid name entry", "Please enter a valid name")
+        selected_role = self.SettingsRoleComboBox.currentIndex()
+        settings.settingsHandler.save(self, name, selected_role, self.selected_colors)
+        print("save settings")
 
 
 
