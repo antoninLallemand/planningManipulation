@@ -1,10 +1,10 @@
 {
     "colors": {
-        "off": "#ee0979",
-        "sick": "#aee1f2",
-        "undefined": "#fd85a9",
-        "vacation": "#c00fbf",
-        "work": "#8dedd9"
+        "off": "#92d050",
+        "sick": "#ff99cc",
+        "undefined": "#55ffff",
+        "vacation": "#ffff00",
+        "work": "#ffaa00"
     },
     "name": "lorine",
     "role": 1

@@ -1,0 +1,11 @@
+--> [2024-12-28 18:32:45]: An error occurred generating planning : '<' not supported between instances of 'list' and 'int'
+--> [2024-12-28 18:47:46]: An error occurred generating planning : '<' not supported between instances of 'list' and 'int'
+--> [2024-12-28 18:48:35]: An error occurred generating planning : '<' not supported between instances of 'list' and 'int'
+--> [2024-12-28 18:48:51]: An error occurred generating planning : '<' not supported between instances of 'list' and 'int'
+--> [2024-12-28 18:49:07]: An error occurred generating planning : '<' not supported between instances of 'list' and 'int'
+--> [2024-12-28 18:54:23]: An error occurred generating planning : '<' not supported between instances of 'list' and 'int'
+--> [2024-12-28 18:58:47]: An error occurred generating planning : '<' not supported between instances of 'list' and 'int'
+--> [2024-12-28 19:07:52]: An error occurred generating planning : '<' not supported between instances of 'list' and 'int'
+--> [2024-12-28 19:11:54]: An error occurred generating planning : The file contains a week number error at SEMAINE 06
+--> [2024-12-28 19:12:24]: An error occurred generating planning : The file contains a week number error at SEMAINE 06
+--> [2024-12-28 19:14:48]: An error occurred generating planning : The file contains a week number error at SEMAINE 06, only 0 instances

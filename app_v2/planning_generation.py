@@ -3,12 +3,27 @@ import numpy as np
 import datetime
 import math
 import plotly.express as px
-import tkinter as tk
-from tkinter import filedialog
+import plotly.graph_objects as go
 import openpyxl
 import locale
 import string
 import re
+import datetime
+
+def log(content):
+    try:
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Format the log entry
+        log_entry = f"--> [{current_time}]: {content}\n"
+
+        with open('./planning_generation.log', 'a') as file:
+            file.write(log_entry)
+    except FileNotFoundError:
+        print("log file not found")
+        pass
+    except Exception as e:
+        print(f"Cannot log : {e}")
+        pass
 
 def retrieve_sheets(file_path):
     try:
@@ -31,6 +46,7 @@ def retrieve_sheets(file_path):
 
     except Exception as e:
         print(e)
+        log(f"An error occurred generating planning : {e}")
 
 def retrieve_week_rows(sheet_dict, sheet_name):
     row_with_week = []
@@ -187,8 +203,8 @@ def generate_planning(file_path, config):
                     if len(row_with_week) != 6 or len(row_with_name) != 6:
                         if len(row_with_name) == 0:
                             raise Exception("The name you provided does not exist in the file")
-                        elif len(row_with_week < 6):
-                            raise Exception(f"The file contains a week number error at {sheet_names[sheet_number]}")
+                        elif len(row_with_week) < 6:
+                            raise Exception(f"The file contains a week number error at {sheet_names[sheet_number]}, only {len(row_with_week)} instances")
                         else:
                             raise Exception("Error about user name or week number in the file")
 
@@ -242,15 +258,31 @@ def generate_planning(file_path, config):
                     print("------------------------")
 
                 except Exception as e:
-                    figures.append(px.timeline())
+                    log(f"An error occurred generating planning : {e}")
+                    fig = go.Figure()
+                    fig.add_annotation(
+                        text="Une erreur est survenue lors de la génération du planning (vérifier le format du fichier .xls*)",
+                        xref="paper", yref="paper",
+                        x=0.5, y=0.5,
+                        showarrow=False,
+                        font=dict(size=20, color="red")
+                    )
+                    fig.update_layout(
+                        title="Erreur",
+                        xaxis=dict(visible=False),
+                        yaxis=dict(visible=False)
+                    )
+                    figures.append(fig)
                     print(e)
                     pass
 
         else:
             print("NO NAME OR NO COLORS IN CONFIG !!!")
+            log(f"An error occurred generating planning : No name or no colors in config file")
 
         return figures
     except Exception as e:
+        log(f"An error occurred generating planning : {e}")
         print(e)
 
 

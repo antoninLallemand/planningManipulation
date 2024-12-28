@@ -5,12 +5,6 @@ import settings
 import importlib
 import copy
 
-"""
-TODO :
-    - QSS
-    - ERROR MANAGEMENT
-    - PLANNING SAVE WITH NAME
-"""
 
 class PlanningThread(QtCore.QThread):
     # Signal to notify when the planning generation is complete 
@@ -27,6 +21,34 @@ class PlanningThread(QtCore.QThread):
         figures = planning_generation.generate_planning(self.file, self.config)
         self.finished.emit(figures)  # Emit the result when done
 
+class ScreenshotDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Enregistrer le planning")
+        self.setModal(True)
+
+        layout = QtWidgets.QVBoxLayout()
+
+        self.label = QtWidgets.QLabel("Entrer le nom du fichier (sans extension):")
+        layout.addWidget(self.label)
+
+        self.filename_input = QtWidgets.QLineEdit()
+        layout.addWidget(self.filename_input)
+
+        button_layout = QtWidgets.QHBoxLayout()
+        self.cancel_button = QtWidgets.QPushButton("Annuler")
+        self.save_button = QtWidgets.QPushButton("Enregistrer")
+        button_layout.addWidget(self.cancel_button)
+        button_layout.addWidget(self.save_button)
+        layout.addLayout(button_layout)
+
+        self.setLayout(layout)
+
+        self.save_button.clicked.connect(self.accept)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def get_filename(self):
+        return self.filename_input.text()
 
 class MainUI(QtWidgets.QMainWindow):
     def __init__(self):
@@ -59,6 +81,9 @@ class MainUI(QtWidgets.QMainWindow):
 
         self.carouselPreviousButton.clicked.connect(self.show_previous_image)
         self.carouselNextButton.clicked.connect(self.show_next_image)
+
+        self.downloadButton = self.findChild(QtWidgets.QPushButton, 'downloadButton')
+        self.downloadButton.clicked.connect(self.take_screenshot)
 
         """SETTINGS PAGE"""
         self.SettingsNameLineEdit = self.findChild(QtWidgets.QLineEdit, 'SettingsNameLineEdit')
@@ -99,7 +124,10 @@ class MainUI(QtWidgets.QMainWindow):
 
 
     def browse_xls(self):
-        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Excel File", "", "Excel Files (*.xls *.xlsm *.xlsx)")
+        default_folder = QtCore.QDir.homePath() + "/Downloads"
+        if not os.path.exists(default_folder):
+            default_folder = ""
+        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Excel File", default_folder, "Excel Files (*.xls *.xlsm *.xlsx)")
         if file_name:
             self.browsedXlsLine.setText(file_name)
             self.selected_file = file_name
@@ -134,7 +162,11 @@ class MainUI(QtWidgets.QMainWindow):
         # Process the generated figures
         self.mainTabWidget.setTabEnabled(1, True)
         self.mainTabWidget.setCurrentIndex(1)
+
         self.clear_all_pages()
+
+        if len(figures) > 1:
+            self.carouselNextButton.setEnabled(True)
         for fig in figures:
             html = fig.to_html(include_plotlyjs="cdn")
             web_view = QtWebEngineWidgets.QWebEngineView()
@@ -164,6 +196,7 @@ class MainUI(QtWidgets.QMainWindow):
             self.resultCarousel.setCurrentIndex(current_index + 1)
             self.update_button_states()
 
+
     def clear_all_pages(self):
         # Remove all pages from the QStackedWidget
         while self.resultCarousel.count() > 0:
@@ -171,7 +204,32 @@ class MainUI(QtWidgets.QMainWindow):
             self.resultCarousel.removeWidget(widget_to_remove)
             widget_to_remove.deleteLater()  # Safely delete the widget
         print("All pages removed successfully")
+        self.carouselNextButton.setEnabled(False)
+        self.carouselPreviousButton.setEnabled(False)
 
+    def take_screenshot(self):
+        # Capture screenshot
+        screenshot = self.resultCarousel.grab()
+
+        # Open dialog to get file name
+        dialog = ScreenshotDialog(self)
+        if dialog.exec() == QtWidgets.QDialog.Accepted:
+            filename = dialog.get_filename()
+            if filename:
+                try:
+                    # Get the Downloads folder path
+                    downloads_folder = QtCore.QDir.homePath() + "/Downloads"
+                    if not os.path.exists(downloads_folder):
+                        os.makedirs(downloads_folder)
+                    file_path = os.path.join(downloads_folder, f"{filename}.png")
+
+                    # Save screenshot
+                    screenshot.save(file_path, "PNG")
+                    print(f"Screenshot saved at: {file_path}")
+                except Exception as e:
+                    QtWidgets.QMessageBox.warning(self, "Erreur lors de l'enregistrement", f"Erreur : {e}")
+            else :
+                QtWidgets.QMessageBox.warning(self, "Nom de fichier non valide", "Veuillez entrer un nom valide")
 
     def open_color_dialog(self, color_button: QtWidgets.QPushButton, color_type):
         """Open the color picker dialog and set the selected color."""
@@ -185,9 +243,11 @@ class MainUI(QtWidgets.QMainWindow):
         name = self.SettingsNameLineEdit.text()
         if name == "":
             name = self.config['name']
-            QtWidgets.QMessageBox.warning(self, "Invalid name entry", "Please enter a valid name")
+            QtWidgets.QMessageBox.warning(self, "Nom de fichier non valide", "Veuillez entrer un nom valide")
         selected_role = self.SettingsRoleComboBox.currentIndex()
         settings.settingsHandler.save(self, name, selected_role, self.selected_colors)
+        self.config = settings.settingsHandler.retrieve(self)
+        QtWidgets.QMessageBox.information(self, "Enregistrement des modifications", "Les modifications ont bien été enregistrées")
         print("save settings")
 
 
