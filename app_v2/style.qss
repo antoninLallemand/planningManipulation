@@ -1,14 +1,16 @@
-QWidget {
+QWidget
+{
 	background-color: #606060;
 	color: #ffffff;
 	border-color: #051a39;
 	font-weight: bold;
-	font-family: Trebuchet MS;
-	font-size: '(*_font_size_*)'px;
+	font-family : Trebuchet MS;
+	font-size : 30px;
+
 }
 
 #mainTitle {
-	font-size: '(*_title_fs_*)'px;
+	font-size: 50px;
 }
 
 QTabWidget::pane {
@@ -19,23 +21,22 @@ QTabWidget::pane {
 QTabBar::tab {
 	background: lightgrey;
 	color: black;
-	padding: '(*_padding_*)'px;
+	padding: 10px;
 }
-
 QTabBar::tab:selected {
 	background: rgb(7, 113, 5);
 	color: white;
 }
 
 QTabBar::tab:disabled {
-	background: rgb(118, 126, 120);  /* Fixed typo here */
+	background: gb(118, 126, 120);
 	color: white;
 }
 
 QPushButton {
 	background-color: rgb(63, 206, 7);
 	border-radius: 5px;
-	padding: '(*_padding_*)'px;
+	padding: 10px;
 }
 
 QPushButton:hover {
@@ -53,5 +54,5 @@ QLineEdit, QComboBox {
 }
 
 #browsedXlsLine {
-	font-size: '(*_browsed_fs_*)'px;
+	font-size: 20px;
 }

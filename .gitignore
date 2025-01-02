@@ -2,3 +2,13 @@
 *.xlsm
 *.xlsx
 *.xsl
+
+#Ignore env file
+env/
+
+*.spec
+build/
+dist/
+releases/
+
+*.exe

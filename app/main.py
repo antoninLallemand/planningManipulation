@@ -2,10 +2,10 @@ import sys
 import importlib
 import settings
 import planning_generation
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox, QColorDialog, QStackedWidget
-from PyQt6.QtGui import QIcon, QColor, QMovie, QPalette
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QMessageBox, QLineEdit, QLabel, QWidget, QVBoxLayout, QDialog, QToolButton, QHBoxLayout, QComboBox, QColorDialog, QStackedWidget
+from PyQt5.QtGui import QIcon, QColor, QMovie, QPalette
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 import copy
 
 

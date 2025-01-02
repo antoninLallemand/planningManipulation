@@ -261,7 +261,7 @@ def generate_planning(file_path, config):
                     log(f"An error occurred generating planning : {e}")
                     fig = go.Figure()
                     fig.add_annotation(
-                        text="Une erreur est survenue lors de la génération du planning (vérifier le format du fichier .xls*)",
+                        text="Une erreur est survenue lors de la génération du planning (vérifier le format du fichier .xls* et la validité de votre nom)",
                         xref="paper", yref="paper",
                         x=0.5, y=0.5,
                         showarrow=False,
