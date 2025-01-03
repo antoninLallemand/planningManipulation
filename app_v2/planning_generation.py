@@ -9,6 +9,7 @@ import locale
 import string
 import re
 import datetime
+import os
 
 def log(content):
     try:
@@ -16,7 +17,9 @@ def log(content):
         # Format the log entry
         log_entry = f"--> [{current_time}]: {content}\n"
 
-        with open('./planning_generation.log', 'a') as file:
+        log_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "Plannings pharmacie", "generation.log")
+
+        with open(log_dir, 'a') as file:
             file.write(log_entry)
     except FileNotFoundError:
         print("log file not found")

@@ -539,6 +539,18 @@ class Ui_MainWindow(object):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
+    if hasattr(sys, '_MEIPASS'):
+        assets_path = os.path.join(sys._MEIPASS, 'assets')
+    else:
+        assets_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+
+    QtCore.QDir.addSearchPath('assets', assets_path)
+
+    #show splash screen
+    splash_pix = QtGui.QPixmap('assets:splash.png')
+    splash = QtWidgets.QSplashScreen(splash_pix)
+    splash.show()
+
     # Load translator
     translator = QtCore.QTranslator()
     if translator.load(os.path.join(QtCore.QLibraryInfo.location(QtCore.QLibraryInfo.TranslationsPath), 'qtbase_fr.qm')):
@@ -546,13 +558,6 @@ if __name__ == "__main__":
         print("Translation loaded successfully.")
     else:
         print("Failed to load translation.")
-
-    if hasattr(sys, '_MEIPASS'):
-        assets_path = os.path.join(sys._MEIPASS, 'assets')
-    else:
-        assets_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
-
-    QtCore.QDir.addSearchPath('assets', assets_path)
 
     # Set application icon
     app.setWindowIcon(QtGui.QIcon('assets:Logo.png'))
@@ -582,4 +587,8 @@ if __name__ == "__main__":
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.showMaximized()
+
+    # Close splash screen
+    splash.finish(MainWindow)
+
     sys.exit(app.exec_())
