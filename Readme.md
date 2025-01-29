@@ -4,7 +4,7 @@
 
 ## Documentation :
 
-[Installation et utilisation](https://github.com/antoninLallemand/planningManipulation/doc/_build/index.html)
+[Installation et utilisation](https://github.com/antoninLallemand/planningManipulation/index.html)
 
 ## Télécharger le logiciel :
 
