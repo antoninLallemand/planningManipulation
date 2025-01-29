@@ -1,1 +1,1 @@
-compile to html ----> from "doc" directory : sphinx-build -b html source build
+compile to html ----> from "doc" directory : sphinx-build -b html <source_folder> <build_folder>
