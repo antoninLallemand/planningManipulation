@@ -1,0 +1,1 @@
+compile to html ----> from "doc" directory : sphinx-build -b html source build

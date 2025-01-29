@@ -1,7 +1,14 @@
 # Programme de manipulation des plannings - pharmacie
 
-## Compatible uniquement avec WINDOWS !
+### Le logiciel est compatible uniquement avec WINDOWS !
 
-## Télécharger le logiciel
+## Documentation :
+
+[Installetion et utilisation](https://github.com/antoninLallemand/planningManipulation/doc/build/index.html)
+
+## Télécharger le logiciel :
 
 [Télécharger (Windows)](https://drive.google.com/uc?export=download&id=199-Bg0ES521WTa-zmf7X0REXwPr6ylhT)
+
+
+
